@@ -47,8 +47,8 @@ Your site: https://YOUR-USERNAME.github.io/point-cards/
 ## PART 3: First-Time App Setup (1 minute)
 
 1. Open your GitHub Pages URL
-2. Paste your Firebase Database URL
-3. Choose a teacher password
+2. Paste your Firebase Database URL https://loa-pointcards-default-rtdb.asia-southeast1.firebasedatabase.app/
+3. Choose a teacher password laurusoa2026
 4. Click Save and Start — done!
 
 ---
