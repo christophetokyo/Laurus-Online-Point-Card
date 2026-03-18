@@ -280,12 +280,13 @@ let DB={};
 //
 const BUILTIN_DESIGNS = {
   mage: { name: "Mage", imgSrc: "cards/mage.png" },
+  fighter: { name: "Fighter", imgSrc: "cards/fighter.png" },
   // ↑ Add new designs above this line, following the same pattern ↑
 };
 let DESIGNS={};
 // ===== CONFIGURATION - EDIT THESE TWO LINES =====
-const FIREBASE_URL = "YOUR_FIREBASE_URL_HERE";  // ← Paste your Firebase URL here
-const TEACHER_PASSWORD = "YOUR_PASSWORD_HERE";   // ← Set your teacher password here
+const FIREBASE_URL = "https://loa-pointcards-default-rtdb.asia-southeast1.firebasedatabase.app/";  // ← Paste your Firebase URL here
+const TEACHER_PASSWORD = "laurusoa2026";   // ← Set your teacher password here
 // ================================================
 let CONFIG={dbUrl:FIREBASE_URL,password:TEACHER_PASSWORD};
 let isTeacher=false;
