@@ -55,6 +55,12 @@ Your site: https://YOUR-USERNAME.github.io/point-cards/
 
 ## Adding New Card Designs
 
-1. Create new card image (same layout as Mage card)
-2. Upload to cards/ folder in GitHub
-3. Ask your developer to add a few lines to the CARD_DESIGNS section in index.html
+Upload the image to cards/ on GitHub
+Find this section near the top of index.html:
+
+const CARD_DESIGNS = {
+  mage: {
+    name: "Mage",
+    imgSrc: "cards/mage.png",
+
+Copy the entire mage block, paste it below, and change the name + image filename
