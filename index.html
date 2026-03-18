@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Point Card System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Noto+Sans+JP:wght@400;500;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #0c0614;
+  --bg-dark: #140e22;
+  --bg-card: #1c1430;
+  --bg-surface: #241a3a;
+  --gold: #c8a44e;
+  --gold-bright: #e8c85e;
+  --gold-dim: #8a7030;
+  --cyan: #4cccdd;
+  --purple: #8a6aff;
+  --purple-dim: #5a3aaa;
+  --text: #e0d8f0;
+  --text-dim: #8878a8;
+  --danger: #cc3344;
+  --success: #33aa55;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg-deep);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ===== PAGES ===== */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ===== HEADER ===== */
+.header {
+  background: linear-gradient(180deg, #1a1030 0%, var(--bg-deep) 100%);
+  border-bottom: 1px solid var(--gold-dim);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-title {
+  font-family: 'Uncial Antiqua', serif;
+  font-size: 20px;
+  color: var(--gold);
+  letter-spacing: 2px;
+}
+.header-nav { display: flex; gap: 8px; align-items: center; }
+
+.btn {
+  background: var(--bg-surface);
+  color: var(--text);
+  border: 1px solid var(--purple-dim);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 700;
+  transition: all 0.15s;
+}
+.btn:hover { background: var(--purple-dim); border-color: var(--purple); }
+.btn.gold { border-color: var(--gold-dim); color: var(--gold); }
+.btn.gold:hover { background: rgba(200,164,78,0.15); }
+.btn.danger { border-color: var(--danger); color: var(--danger); }
+.btn.danger:hover { background: rgba(204,51,68,0.15); }
+.btn.success { border-color: var(--success); color: var(--success); }
+.btn.success:hover { background: rgba(51,170,85,0.15); }
+.btn.primary { background: var(--purple-dim); border-color: var(--purple); color: #fff; }
+.btn.primary:hover { background: var(--purple); }
+
+/* ===== STUDENT LIST PAGE ===== */
+.student-grid {
+  max-width: 900px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+.student-grid h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+.student-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+.student-card {
+  background: var(--bg-card);
+  border: 1px solid #2a2045;
+  border-radius: 10px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.student-card:hover {
+  border-color: var(--purple);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(138,106,255,0.15);
+}
+.student-card .name {
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.student-card .meta {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.student-card .progress {
+  margin-top: 8px;
+  height: 4px;
+  background: #2a2045;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.student-card .progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--purple), var(--cyan));
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.add-student-card {
+  background: transparent;
+  border: 2px dashed #2a2045;
+  border-radius: 10px;
+  padding: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  transition: all 0.2s;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+.add-student-card:hover {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg-dark);
+  border: 1px solid #3a2a5a;
+  border-radius: 12px;
+  padding: 24px;
+  width: 360px;
+  max-width: 92vw;
+}
+.modal h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  color: var(--gold);
+  margin-bottom: 14px;
+}
+.modal label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-dim);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  margin-top: 10px;
+}
+.modal input, .modal select {
+  width: 100%;
+  background: var(--bg-surface);
+  border: 1px solid #3a2a5a;
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.modal input:focus, .modal select:focus {
+  outline: none;
+  border-color: var(--purple);
+}
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+/* ===== CARD VIEW PAGE ===== */
+.card-toolbar {
+  background: linear-gradient(180deg, #1a1030 0%, var(--bg-deep) 100%);
+  border-bottom: 1px solid var(--gold-dim);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.tb-group { display: flex; align-items: center; gap: 6px; }
+.tb-label { font-size: 10px; color: var(--text-dim); font-weight: 700; text-transform: uppercase; }
+.tb-divider { width: 1px; height: 24px; background: #2a2045; margin: 0 4px; }
+
+.shape-btn {
+  width: 30px; height: 30px;
+  border: 2px solid #3a2a5a;
+  background: var(--bg-surface);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  transition: all 0.15s;
+  color: #b0a0d0;
+}
+.shape-btn:hover { border-color: var(--purple); }
+.shape-btn.active { border-color: var(--purple); background: var(--purple-dim); color: #fff; }
+
+.color-swatch {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 2px solid #2a2045;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.color-swatch:hover { transform: scale(1.15); }
+.color-swatch.active { border-color: #fff; box-shadow: 0 0 6px rgba(255,255,255,0.3); transform: scale(1.15); }
+
+.reason-select {
+  background: var(--bg-surface);
+  border: 1px solid #3a2a5a;
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.point-badge {
+  background: linear-gradient(135deg, var(--purple-dim), var(--purple));
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.card-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 0 16px;
+  padding-top: 8px;
+}
+.card-tab {
+  background: var(--bg-card);
+  border: 1px solid #2a2045;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dim);
+  transition: all 0.15s;
+}
+.card-tab:hover { color: var(--text); }
+.card-tab.active { background: var(--bg-surface); color: var(--gold); border-color: var(--gold-dim); }
+
+/* Card display */
+.card-display {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 12px 16px;
+}
+.card-container {
+  position: relative;
+  width: 100%;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.card-container img {
+  width: 100%;
+  display: block;
+  border-radius: 4px;
+}
+
+.num-zone {
+  position: absolute;
+  width: 4.2%;
+  height: 6.2%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  border-radius: 50%;
+  z-index: 10;
+  transition: all 0.15s;
+}
+.num-zone.milestone { width: 5%; height: 7.2%; }
+.num-zone:hover {
+  background: rgba(138,106,255,0.25);
+  box-shadow: 0 0 10px rgba(138,106,255,0.25);
+}
+
+.sticker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: auto;
+  cursor: pointer;
+  animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes popIn {
+  0% { transform: translate(-50%, -50%) scale(0); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+.sticker-shape {
+  font-size: clamp(12px, 2vw, 26px);
+  line-height: 1;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.8));
+}
+.sticker-date {
+  font-size: clamp(4px, 0.5vw, 7px);
+  color: #fff;
+  background: rgba(0,0,0,0.7);
+  padding: 0px 3px;
+  border-radius: 2px;
+  margin-top: -1px;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.card-label {
+  position: absolute;
+  left: 16%;
+  bottom: 2%;
+  transform: translateX(-50%);
+  z-index: 15;
+  text-align: center;
+  pointer-events: none;
+}
+.card-label .student-name {
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.95), 0 0 16px rgba(80,160,255,0.3);
+  font-size: clamp(10px, 1.3vw, 18px);
+  letter-spacing: 1px;
+}
+.card-label .card-number {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 700;
+  color: var(--gold-bright);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.9);
+  font-size: clamp(7px, 0.8vw, 12px);
+  margin-top: 1px;
+}
+
+/* Point Details Table */
+.details-table {
+  max-width: 600px;
+  margin: 12px auto;
+  padding: 0 16px;
+}
+.details-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.details-table th {
+  background: var(--bg-surface);
+  color: var(--gold);
+  font-size: 11px;
+  padding: 8px;
+  text-align: center;
+  border-bottom: 2px solid var(--gold-dim);
+}
+.details-table td {
+  padding: 6px 8px;
+  text-align: center;
+  font-size: 12px;
+  border-bottom: 1px solid #2a2045;
+}
+.details-table tr:hover { background: rgba(138,106,255,0.05); }
+.details-table .empty-row td { color: var(--text-dim); font-style: italic; }
+
+/* Student profile / URL page */
+.profile-page {
+  max-width: 800px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+.profile-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.profile-header h2 {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  font-size: 22px;
+}
+.profile-header .total-points {
+  font-size: 14px;
+  color: var(--cyan);
+  margin-top: 4px;
+}
+.profile-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.profile-card-mini {
+  background: var(--bg-card);
+  border: 1px solid #2a2045;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.profile-card-mini img {
+  width: 100%;
+  display: block;
+}
+.profile-card-mini .info {
+  padding: 10px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* Share URL box */
+.share-url-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--gold-dim);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 16px auto;
+  max-width: 600px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.share-url-box input {
+  flex: 1;
+  background: var(--bg-dark);
+  border: 1px solid #3a2a5a;
+  color: var(--cyan);
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: monospace;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--bg-surface);
+  border: 1px solid #3a2a5a;
+  color: var(--text);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  z-index: 300;
+  transition: transform 0.3s;
+  pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* Print */
+@media print {
+  .header, .card-toolbar, .card-tabs, .toast, .details-table { display: none !important; }
+  .card-display { margin: 0; padding: 0; max-width: 100%; }
+  .card-container img { border-radius: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <div class="header-title">Point Cards</div>
+  <div class="header-nav">
+    <button class="btn gold" onclick="showPage('students')">Students</button>
+    <button class="btn" onclick="exportAll()">Export All</button>
+    <button class="btn" onclick="importAll()">Import</button>
+  </div>
+</div>
+
+<!-- ===== STUDENT LIST PAGE ===== -->
+<div class="page active" id="page-students">
+  <div class="student-grid">
+    <h2>Students</h2>
+    <div class="student-cards" id="studentCards"></div>
+  </div>
+</div>
+
+<!-- ===== CARD VIEW PAGE ===== -->
+<div class="page" id="page-card">
+  <div class="card-toolbar" id="cardToolbar">
+    <div class="tb-group">
+      <button class="btn gold" onclick="showPage('students')">← Back</button>
+      <span class="tb-label" id="tbStudentName" style="font-size:13px;color:var(--gold)"></span>
+    </div>
+    <div class="tb-divider"></div>
+    <div class="tb-group">
+      <span class="tb-label">Shape</span>
+      <button class="shape-btn active" data-shape="star" onclick="selShape(this)">★</button>
+      <button class="shape-btn" data-shape="cross" onclick="selShape(this)">✖</button>
+      <button class="shape-btn" data-shape="heart" onclick="selShape(this)">♥</button>
+      <button class="shape-btn" data-shape="check" onclick="selShape(this)">✔</button>
+      <button class="shape-btn" data-shape="circle" onclick="selShape(this)">●</button>
+    </div>
+    <div class="tb-divider"></div>
+    <div class="tb-group">
+      <span class="tb-label">Color</span>
+      <div class="color-swatch active" style="background:#ff4444" data-color="#ff4444" onclick="selColor(this)"></div>
+      <div class="color-swatch" style="background:#ff9922" data-color="#ff9922" onclick="selColor(this)"></div>
+      <div class="color-swatch" style="background:#44cc44" data-color="#44cc44" onclick="selColor(this)"></div>
+      <div class="color-swatch" style="background:#3399ff" data-color="#3399ff" onclick="selColor(this)"></div>
+      <div class="color-swatch" style="background:#cc44ff" data-color="#cc44ff" onclick="selColor(this)"></div>
+      <div class="color-swatch" style="background:#fff" data-color="#ffffff" onclick="selColor(this)"></div>
+    </div>
+    <div class="tb-divider"></div>
+    <div class="tb-group">
+      <span class="tb-label">Reason</span>
+      <select class="reason-select" id="reasonSelect">
+        <option value="Attendance">Attendance</option>
+        <option value="Homework">Homework</option>
+        <option value="Great Performance">Great Performance</option>
+      </select>
+    </div>
+    <div class="tb-divider"></div>
+    <span class="point-badge" id="pointBadge">0/100</span>
+    <div class="tb-divider"></div>
+    <div class="tb-group">
+      <button class="btn" onclick="shareStudent()">Share URL</button>
+      <button class="btn" onclick="newCard()">New Card</button>
+      <button class="btn" onclick="window.print()">Print</button>
+    </div>
+  </div>
+
+  <div class="card-tabs" id="cardTabs"></div>
+  <div class="card-display" id="cardDisplay"></div>
+
+  <div class="share-url-box" id="shareBox" style="display:none">
+    <span style="font-size:12px;color:var(--text-dim)">Share link:</span>
+    <input type="text" id="shareUrl" readonly>
+    <button class="btn gold" onclick="copyShareUrl()">Copy</button>
+  </div>
+
+  <div class="details-table" id="detailsTable"></div>
+</div>
+
+<!-- ===== PROFILE PAGE (shared URL view) ===== -->
+<div class="page" id="page-profile">
+  <div class="profile-page" id="profileContent"></div>
+</div>
+
+<!-- ===== ADD STUDENT MODAL ===== -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <h3>Add Student</h3>
+    <label>Student Name / 生徒名</label>
+    <input type="text" id="newName" placeholder="e.g. Tanaka Yuki / 田中ゆき" onkeydown="if(event.key==='Enter')addStudent()">
+    <label>Card Design / カードデザイン</label>
+    <select id="newDesign"></select>
+    <label>Year / 年度</label>
+    <input type="text" id="newYear" value="2026">
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('addModal')">Cancel</button>
+      <button class="btn primary" onclick="addStudent()">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== CARD DESIGNS REGISTRY =====
+const CARD_DESIGNS = {
+  mage: {
+    name: "Mage",
+    // Image will be loaded from cards/mage.png in GitHub Pages version
+    // For self-contained version, use embedded base64
+    imgSrc: "cards/mage.png",
+    positions: (() => {
+      const cols = [33.5,40.1,46.7,53.3,59.9,66.5,73.1,79.7,86.3];
+      const rows = [6.8,16.2,25.8,35.2,44.7,54.2,63.7,73.2,82.7,93.0];
+      const pos = {};
+      for (let ri=0;ri<10;ri++) for (let ci=0;ci<9;ci++) {
+        const n=(9-ri)*9+(ci+1); if(n>99) continue;
+        pos[n]={x:cols[ci],y:rows[ri]};
+      }
+      [100,90,80,70,60,50,40,30,20,10].forEach((m,i) => pos[m]={x:92.8,y:rows[i]});
+      return pos;
+    })()
+  }
+};
+
+const SHAPES = { star:"✳", cross:"✖", heart:"❤", check:"✔", circle:"⬤" };
+
+// ===== STATE =====
+let DB = {}; // { studentId: { name, design, year, cards: [ { number:1, stickers: { num: {shape,color,date,reason} } } ] } }
+let currentStudent = null;
+let currentCardIdx = 0;
+let currentShape = "star";
+let currentColor = "#ff4444";
+
+// ===== STORAGE =====
+function save() { try { localStorage.setItem("pointcards_db", JSON.stringify(DB)); } catch(e){} }
+function load() {
+  try {
+    const r = localStorage.getItem("pointcards_db");
+    if (r) DB = JSON.parse(r);
+  } catch(e){}
+}
+
+// ===== PAGES =====
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if (name === 'students') renderStudentList();
+}
+
+// ===== STUDENT LIST =====
+function renderStudentList() {
+  const container = document.getElementById('studentCards');
+  let html = '';
+  for (const [id, s] of Object.entries(DB)) {
+    const totalPts = s.cards.reduce((sum,c) => sum + Object.keys(c.stickers).length, 0);
+    const currentCard = s.cards[s.cards.length-1];
+    const currentPts = Object.keys(currentCard.stickers).length;
+    html += `<div class="student-card" onclick="openStudent('${id}')">
+      <div class="name">${s.name}</div>
+      <div class="meta">${CARD_DESIGNS[s.design]?.name||s.design} · ${s.year} · Card #${s.cards.length} · ${totalPts} total pts</div>
+      <div class="progress"><div class="progress-bar" style="width:${currentPts}%"></div></div>
+    </div>`;
+  }
+  html += `<div class="add-student-card" onclick="openModal('addModal')">+ Add Student / 生徒を追加</div>`;
+  container.innerHTML = html;
+}
+
+// ===== ADD STUDENT =====
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  // Populate design options
+  const sel = document.getElementById('newDesign');
+  sel.innerHTML = '';
+  for (const [k,v] of Object.entries(CARD_DESIGNS)) {
+    sel.innerHTML += `<option value="${k}">${v.name}</option>`;
+  }
+  document.getElementById('newYear').value = new Date().getFullYear().toString();
+  setTimeout(() => document.getElementById('newName').focus(), 100);
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function addStudent() {
+  const name = document.getElementById('newName').value.trim();
+  const design = document.getElementById('newDesign').value;
+  const year = document.getElementById('newYear').value.trim() || new Date().getFullYear().toString();
+  if (!name) return;
+  const id = 'stu_' + Date.now();
+  DB[id] = { name, design, year, cards: [{ number: 1, stickers: {} }] };
+  save();
+  closeModal('addModal');
+  document.getElementById('newName').value = '';
+  renderStudentList();
+  toast('Added: ' + name);
+}
+
+function deleteStudent(id) {
+  if (!confirm(`Delete ${DB[id].name}? / ${DB[id].name}を削除しますか？`)) return;
+  delete DB[id];
+  save();
+  showPage('students');
+}
+
+// ===== OPEN STUDENT CARD =====
+function openStudent(id) {
+  currentStudent = id;
+  currentCardIdx = DB[id].cards.length - 1;
+  showPage('card');
+  renderCardView();
+}
+
+function renderCardView() {
+  const s = DB[currentStudent];
+  const card = s.cards[currentCardIdx];
+  const design = CARD_DESIGNS[s.design];
+  if (!design) return;
+
+  document.getElementById('tbStudentName').textContent = s.name;
+
+  // Tabs
+  let tabsHtml = '';
+  s.cards.forEach((c, i) => {
+    const pts = Object.keys(c.stickers).length;
+    tabsHtml += `<div class="card-tab ${i===currentCardIdx?'active':''}" onclick="switchCard(${i})">Card #${c.number} (${pts}/100)</div>`;
+  });
+  document.getElementById('cardTabs').innerHTML = tabsHtml;
+
+  // Card image + zones + stickers
+  let cardHtml = `<div class="card-container" id="cardContainer">`;
+  cardHtml += `<img src="${design.imgSrc}" alt="${design.name}" draggable="false">`;
+
+  // Clickable zones
+  for (const [num, pos] of Object.entries(design.positions)) {
+    const isMilestone = parseInt(num) % 10 === 0;
+    cardHtml += `<div class="num-zone${isMilestone?' milestone':''}" data-num="${num}" style="left:${pos.x}%;top:${pos.y}%" onclick="handleClick(${num})"></div>`;
+  }
+
+  // Name + card number label
+  cardHtml += `<div class="card-label">
+    <div class="student-name">${s.name}</div>
+    <div class="card-number">${s.year} #${card.number}</div>
+  </div>`;
+
+  cardHtml += `</div>`;
+  document.getElementById('cardDisplay').innerHTML = cardHtml;
+
+  // Render stickers
+  for (const [num, data] of Object.entries(card.stickers)) {
+    renderSticker(parseInt(num), data);
+  }
+
+  // Point badge
+  const pts = Object.keys(card.stickers).length;
+  document.getElementById('pointBadge').textContent = `${pts}/100`;
+
+  // Details table
+  renderDetails();
+}
+
+function renderSticker(num, data) {
+  const design = CARD_DESIGNS[DB[currentStudent].design];
+  const pos = design.positions[num];
+  if (!pos) return;
+  const existing = document.getElementById('stk-'+num);
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.className = 'sticker';
+  el.id = 'stk-'+num;
+  el.style.left = pos.x+'%';
+  el.style.top = pos.y+'%';
+  el.innerHTML = `<div class="sticker-shape" style="color:${data.color}">${SHAPES[data.shape]}</div><div class="sticker-date">${data.date}</div>`;
+  el.onclick = (e) => { e.stopPropagation(); handleClick(num); };
+  document.getElementById('cardContainer').appendChild(el);
+}
+
+function handleClick(num) {
+  const card = DB[currentStudent].cards[currentCardIdx];
+  if (card.stickers[num]) {
+    delete card.stickers[num];
+    const el = document.getElementById('stk-'+num);
+    if (el) el.remove();
+  } else {
+    const reason = document.getElementById('reasonSelect').value;
+    card.stickers[num] = {
+      shape: currentShape,
+      color: currentColor,
+      date: dateStr(),
+      reason: reason
+    };
+    renderSticker(num, card.stickers[num]);
+  }
+  save();
+  const pts = Object.keys(card.stickers).length;
+  document.getElementById('pointBadge').textContent = `${pts}/100`;
+  // Update tab
+  const tabs = document.querySelectorAll('.card-tab');
+  if (tabs[currentCardIdx]) tabs[currentCardIdx].textContent = `Card #${card.number} (${pts}/100)`;
+  renderDetails();
+}
+
+function switchCard(idx) {
+  currentCardIdx = idx;
+  renderCardView();
+}
+
+function newCard() {
+  const s = DB[currentStudent];
+  const nextNum = s.cards.length + 1;
+  s.cards.push({ number: nextNum, stickers: {} });
+  currentCardIdx = s.cards.length - 1;
+  save();
+  renderCardView();
+  toast(`Card #${nextNum} created!`);
+}
+
+// ===== DETAILS TABLE =====
+function renderDetails() {
+  const card = DB[currentStudent].cards[currentCardIdx];
+  const entries = Object.entries(card.stickers).sort((a,b) => parseInt(a[0]) - parseInt(b[0]));
+  let html = '<table><tr><th>#</th><th>Sticker</th><th>Date</th><th>Reason</th></tr>';
+  if (entries.length === 0) {
+    html += '<tr class="empty-row"><td colspan="4">No points yet / ポイントなし</td></tr>';
+  } else {
+    for (const [num, d] of entries) {
+      html += `<tr><td>${num}</td><td style="color:${d.color}">${SHAPES[d.shape]}</td><td>${d.date}</td><td>${d.reason}</td></tr>`;
+    }
+  }
+  html += '</table>';
+  document.getElementById('detailsTable').innerHTML = html;
+}
+
+// ===== SHARE URL =====
+function shareStudent() {
+  const box = document.getElementById('shareBox');
+  if (box.style.display === 'none') {
+    const url = window.location.origin + window.location.pathname + '?student=' + currentStudent;
+    document.getElementById('shareUrl').value = url;
+    box.style.display = 'flex';
+  } else {
+    box.style.display = 'none';
+  }
+}
+
+function copyShareUrl() {
+  const input = document.getElementById('shareUrl');
+  input.select();
+  navigator.clipboard.writeText(input.value);
+  toast('URL copied! / URLをコピーしました');
+}
+
+// ===== PROFILE VIEW (from shared URL) =====
+function showProfile(studentId) {
+  const s = DB[studentId];
+  if (!s) {
+    document.getElementById('profileContent').innerHTML = '<p style="text-align:center;margin-top:40px;color:var(--text-dim)">Student not found. Data may need to be imported first.<br>生徒が見つかりません。データのインポートが必要かもしれません。</p>';
+    showPage('profile');
+    return;
+  }
+  const design = CARD_DESIGNS[s.design];
+  const totalPts = s.cards.reduce((sum,c) => sum + Object.keys(c.stickers).length, 0);
+
+  let html = `<div class="profile-header">
+    <h2>${s.name}</h2>
+    <div class="total-points">${totalPts} Total Points · ${s.cards.length} Card(s) · ${s.year}</div>
+  </div>`;
+  html += '<div class="profile-cards-grid">';
+  s.cards.forEach((card, i) => {
+    const pts = Object.keys(card.stickers).length;
+    html += `<div class="profile-card-mini" onclick="currentStudent='${studentId}';currentCardIdx=${i};showPage('card');renderCardView();" style="cursor:pointer">
+      <img src="${design?.imgSrc||''}" alt="Card #${card.number}">
+      <div class="info">Card #${card.number} · ${pts}/100 points · ${s.year}</div>
+    </div>`;
+  });
+  html += '</div>';
+  document.getElementById('profileContent').innerHTML = html;
+  showPage('profile');
+}
+
+// ===== EXPORT / IMPORT =====
+function exportAll() {
+  const data = { version: 1, exportDate: new Date().toISOString(), students: DB };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'PointCards_' + dateStr().replace(/\//g,'') + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Exported! / エクスポート完了');
+}
+
+function importAll() {
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = '.json';
+  inp.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.students) throw new Error('Invalid');
+        const count = Object.keys(data.students).length;
+        if (Object.keys(DB).length > 0) {
+          if (confirm('Merge with existing data? OK=Merge, Cancel=Replace\n既存データとマージ？OK=マージ, Cancel=全置換')) {
+            Object.assign(DB, data.students);
+          } else {
+            DB = data.students;
+          }
+        } else {
+          DB = data.students;
+        }
+        save();
+        renderStudentList();
+        toast(`Imported ${count} students`);
+      } catch(err) { toast('Error reading file'); }
+    };
+    reader.readAsText(file);
+  };
+  inp.click();
+}
+
+// ===== TOOLBAR =====
+function selShape(btn) {
+  document.querySelectorAll('.shape-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentShape = btn.dataset.shape;
+}
+function selColor(sw) {
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+  sw.classList.add('active');
+  currentColor = sw.dataset.color;
+}
+
+// ===== HELPERS =====
+function dateStr() {
+  const d = new Date();
+  return String(d.getFullYear()).slice(-2) + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ===== INIT =====
+load();
+
+// Check for ?student= URL parameter
+const params = new URLSearchParams(window.location.search);
+if (params.has('student')) {
+  showProfile(params.get('student'));
+} else {
+  renderStudentList();
+}
+</script>
+</body>
+</html>
